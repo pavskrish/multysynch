@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Google Events</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="jumbotron text-center text-primary">
+            <h1>Events List</h1>
+            <h4>Length : <%= events.length %></h4>
+        </div>
+        <div class="table-responsive-xl row justify-content-center">
+            <table class="table table-dark table-striped table-hover ">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Start Time</th>
+                        <th scope="col">End Time</th>
+                        <th scope="col">Organizer</th>
+                        <th scope="col">Participants</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (var i=0; i < events.length; i++) { %>
+                    <tr>
+                        <td><%= events[i].id  %></td>
+                        <td><%= events[i].title %></td>
+                        <td><%= events[i].description %></td>
+                        <td><%= events[i].location  %></td>
+                        <td><%= events[i].start_time %></td>
+                        <td><%= events[i].end_time %></td>
+                        <td><%= events[i].organizer  %></td>
+                        <td><%= events[i].participants %></td>
+                        <td><span class="fa fa-edit" onclick="updateEvent('<%= JSON.stringify(events[i]) %>')"></span><span class="fas fa-trash"
+                                onclick="deleteEvent('<%= events[i].id %>')"></span></td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header text-center">
+                        <h4 class="modal-title w-100 font-weight-bold">Event</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body mx-3">
+                        <form id="new_event" action="/event/create" method="POST">
+                            <input type="hidden" name="event_id" id="event_id" value="" />
+
+                            <div class="">
+                                <label for="title">Title</label>
+                                <input type="text" name="title" id="title" class="form-control" required>
+                            </div>
+
+                            <div class="">
+                                <label for="description">Description</label>
+                                <input type="text" name="description" id="description" class="form-control" required>
+                            </div>
+
+                            <div class="">
+                                <label for="location">Location</label>
+                                <input type="text" name="location" id="location" class="form-control"  required>
+                            </div>
+
+                            <div class="">
+                                <label for="start_time">Start Time</label>
+                                <input type="text" name="start_time" id="start_time" class="form-control" required>
+                            </div>
+
+                            <div class="">
+                                <label for="end_time">End Time</label>
+                                <input type="text" name="end_time" id="end_time" class="form-control" required>
+                            </div>
+
+                            <div class="">
+                                <label for="organizer">Organizer</label>
+                                <input type="text" name="organizer" id="organizer" class="form-control" required>
+                            </div>
+
+                            <div class="">
+                                <label for="participants">Participants</label>
+                                <input type="text" name="participants" id="participants" class="form-control" required>
+                            </div>
+                            <br />
+
+                            <input id="save_event" type="submit" onclick="windowReload()" value="Add Event" class="btn btn-primary text-center" />
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="text-center">
+            <a href="" class="btn btn-success btn-rounded" data-toggle="modal" data-target="#modalLoginForm"><span
+                    class="fas fa-plus"></span>Add</a>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            flatpickr('#start_time', {
+                enableTime: true,
+            })
+            flatpickr('#end_time', {
+                enableTime: true,
+            })
+        })
+
+        function windowReload() {
+            if ($('#new_event')[0].checkValidity()) {
+                console.log('window reloaded')
+                if (confirm('Event Added/Updated!')) {
+                    // window.location.reload(true)
+                }
+            }
+            
+        }
+
+        function updateEvent(jsonEvent) {
+            var event = jsonEvent.replaceAll(/\"\"/g, '\"')
+            event = JSON.parse(event)
+
+            $('#event_id').val(event.id)
+            $('#title').val(event.title)
+            $('#description').val(event.description)
+            $('#location').val(event.location)
+            $('#start_time').val(event.start_time)
+            $('#end_time').val(event.end_time)
+            $('#organizer').val(event.organizer)
+            $('#participants').val(event.participants)
+
+            $('#save_event').val('Update Event')
+            $('#new_event').attr('action', '/event/update')
+            
+            $('#modalLoginForm').modal();
+        }
+
+        function deleteEvent(eventId) {
+            $.ajax({
+                url: '/event/delete?eventId=' + eventId,
+                type: 'GET',
+                cache: false,
+                success: function (data) {
+                    if (confirm(data.message)) {
+                        window.location.reload()
+                    }
+                }, error: function (jqXHR, textStatus, err) {
+                    console.error('text status ' + textStatus + ', err ' + err)
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>

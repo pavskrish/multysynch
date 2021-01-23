@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Google Contacts</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="jumbotron text-center text-primary">
+            <h1>Contacts List</h1>
+            <h4>Length : <%= contacts.length %></h4>
+        </div>
+        <div class="table-responsive-xl row justify-content-center">
+            <table class="table table-dark table-striped table-hover ">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">First Name</th>
+                        <th scope="col">Last Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Phone Number</th>
+                        <th scope="col">Organization</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (var i=0; i < contacts.length; i++) { %>
+                    <tr>
+                        <% 
+                            var id = contacts[i].resourceName
+                            id = id.replace('people/', '') 
+                        %>
+                        <td><%= id  %></td>
+                        <td><%= contacts[i].names[0].givenName %></td>
+                        <td><%= contacts[i].names[0].familyName %></td>
+                        <td><%= contacts[i].emailAddresses[0].value  %></td>
+                        <td><%= contacts[i].phoneNumbers[0].value %></td>
+                        <td><%= contacts[i].organizations[0].name %></td>
+                        <td><span class="fa fa-edit"
+                                onclick="updateContact('<%= JSON.stringify(contacts[i]) %>')"></span><span
+                                class="fas fa-trash" onclick="deleteContact('<%= id %>')"></span></td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal fade" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header text-center">
+                        <h4 class="modal-title w-100 font-weight-bold">Contact</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body mx-3">
+                        <form id="new_contact" action="/contact/create" method="POST">
+                            <input type="hidden" name="contact_id" id="contact_id" value="" />
+
+                            <input type="hidden" name="etag" id="etag" value="" />
+
+                            <div class="">
+                                <label for="first_name">First Name</label>
+                                <input type="text" name="first_name" id="first_name" class="form-control" required>
+                            </div>
+
+                            <div class="">
+                                <label for="last_name">Last Name</label>
+                                <input type="text" name="last_name" id="last_name" class="form-control" required>
+                            </div>
+
+                            <div class="">
+                                <label for="email">Email</label>
+                                <input type="text" name="email" id="email" class="form-control" required>
+                            </div>
+
+                            <div class="">
+                                <label for="phone">Phone Number</label>
+                                <input type="text" name="phone" id="phone" class="form-control" required>
+                            </div>
+
+                            <div class="">
+                                <label for="organization">Organization</label>
+                                <input type="text" name="organization" id="organization" class="form-control" required>
+                            </div>
+                            <br />
+
+                            <input type="submit" id="save_contact" onclick="windowReload()" value="Add Contact"
+                                class="btn btn-primary text-center" />
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="text-center">
+            <a href="" class="btn btn-success btn-rounded" data-toggle="modal" data-target="#modalLoginForm"><span
+                    class="fas fa-plus"></span>Add</a>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+
+        })
+
+        function windowReload() {
+            if ($('#new_contact')[0].checkValidity()) {
+                console.log('window reloaded')
+                if (confirm('Contact Added/Updated!')) {
+                    // window.location.reload(true)
+                }
+            }
+
+        }
+
+        function updateContact(contactJson) {
+            var contact = JSON.parse(contactJson)
+
+            var id = contact.resourceName
+            id = id.replace('people/', '')
+
+            $('#contact_id').val(id)
+            $('#etag').val(contact.etag)
+            $('#first_name').val(contact.names[0].givenName)
+            $('#last_name').val(contact.names[0].familyName)
+            $('#email').val(contact.emailAddresses[0].value)
+            $('#phone').val(contact.phoneNumbers[0].value)
+            $('#organization').val(contact.organizations[0].name)
+
+            $('#save_contact').val('Update Contact')
+            $('#new_contact').attr('action', '/contact/update')
+
+            $('#modalLoginForm').modal();
+        }
+
+        function deleteContact(contactId) {
+            $.ajax({
+                url: '/contact/delete?contactId=' + contactId,
+                type: 'GET',
+                cache: false,
+                success: function (data) {
+                    if (confirm(data.message)) {
+                        window.location.reload()
+                    }
+                }, error: function (jqXHR, textStatus, err) {
+                    console.error('text status ' + textStatus + ', err ' + err)
+                }
+            })
+        }
+        
+    </script>
+</body>
+
+</html>

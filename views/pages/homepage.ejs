@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Google SignIn</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <!-- load bootstrap css -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- load fontawesome -->
+  <meta name="google-site-verification" content="smZES2ZI_Ed6n4wJ5rgf8u3zcinfV2RslNwe_KbB0yA" />
+  <!-- <meta name="google-site-verification" content="fyKI50hv691J320np7mUbhgPylGtltkVCXX-ax8DWZQ" /> -->
+  <style>
+    body {
+      padding-top: 70px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="jumbotron">
+      <h1 class="text-primary text-center"><span class="fa fa-user"></span> Profile Information</h1>
+
+      <div class="text-center">
+        <p>
+          <strong>Email</strong>: <%= user.email %> <br>
+          <strong>Name</strong>: <%= user.name %>
+        </p>
+      </div>
+
+      <div class="text-center">
+        <p>Go to :</p>
+        <a href="/event/list" class="btn btn-primary">Events</a>
+        <a href="/contact/list" class="btn btn-primary">Contacts</a>
+      </div>
+
+      <br><br>
+
+      <div class="text-center">
+        <p>Sync All :</p>
+        <a href="/eventsyncall" class="btn btn-primary">Events Sync All</a>
+        <a href="/contactsyncall" class="btn btn-primary">Contacts Sync All</a>
+      </div>
+
+      <br><br>
+      <div class="row">
+        <div class="text-center">
+          <form method="POST" action="/webhook/subscription">
+            <label for="webhook_url">Enter Subscription webhook url : </label>
+            <div class="input-group mb-2">
+              <div class="input-group-prepend">
+                <span class="input-group-text">https://</span>
+              </div>
+              <% if (subscriptionData.subscriptionDomainUrl) { %>
+              <input type="text" class="form-control" id="webhook_url" name="webhook_url"
+                value="<%= subscriptionData.subscriptionDomainUrl %>" readonly>
+              <% } else { %>
+              <input type="text" class="form-control" id="webhook_url" name="webhook_url">
+              <% } %>
+              <input type="hidden" name="sync_exists" value="<%= isSyncExists %>" />
+
+              <div class="input-group-append">
+                <span class="input-group-text">/webhook/notifications</span>
+              </div>
+            </div>
+            <% if (subscriptionData.subscriptionDomainUrl) { %>
+            <button type="submit" class="btn btn-danger mb-2">Delete Sync</button>
+            <% } else { %>
+            <button type="submit" class="btn btn-primary mb-2">Create Sync</button>
+            <% } %>
+
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+
+</html>
